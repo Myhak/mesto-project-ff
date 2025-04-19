@@ -1,5 +1,4 @@
 
-
 // Функция для создания карточки
 export function createCard(item, { deleteCard, handleLikeClick, handleImageClick }) {
   const cardTemplate = document.querySelector('#card-template');
@@ -22,7 +21,7 @@ export function createCard(item, { deleteCard, handleLikeClick, handleImageClick
     handleLikeClick(likeButton);
   });
 
-  // Обработчик для открытия попапа с изображением при клике на изображение карточки
+  // Обработчик для открытия попапа с изображением
   cardImage.addEventListener('click', () => {
     handleImageClick(item.link, item.name);
   });
@@ -35,7 +34,7 @@ export function deleteCard(cardElement) {
   cardElement.remove();
 }
 
-// Функция для обработки лайка карточки
+// Функция для лайка карточки
 export function handleLikeClick(likeButton) {
-  likeButton.classList.toggle('card__like-button_active');
+  likeButton.classList.toggle('card__like-button_is-active');
 }
