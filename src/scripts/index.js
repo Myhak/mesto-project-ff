@@ -1,25 +1,41 @@
-
 import '../pages/index.css';
 import { initialCards } from './cards.js';
 import { createCard, deleteCard, handleLikeClick } from './card.js';
-import { openPopup, closePopup, setupCloseButtons, setupOverlayListeners, openEditProfilePopup } from './modal.js';
+import { openPopup, closePopup, setupCloseButtons, setupOverlayListeners } from './modal.js';
 
-// элементы профиля
+// Элементы профиля
 const profileTitleElement = document.querySelector('.profile__title');
 const profileDescriptionElement = document.querySelector('.profile__description');
 
-// кнопкa редактирования профиля
+// Кнопки управления
 const editProfileButton = document.querySelector('.profile__edit-button');
-
-// кнопкa добавления нового места
 const addCardButton = document.querySelector('.profile__add-button');
 
-const editProfilePopup = document.querySelector('.profile__info');
+// Модальные окна
+const editProfilePopup = document.querySelector('.popup_type_edit');
 const newCardPopup = document.querySelector('.popup_type_new-card');
-const imagePopup = document.querySelector('.popup__image');
+const imagePopup = document.querySelector('.popup_type_image');
 
+// Формы модальных окон
+const editProfileForm = editProfilePopup?.querySelector('.popup__form[name="edit-profile"]');
+const newCardForm = newCardPopup?.querySelector('.popup__form[name="new-place"]');
+
+// Элементы формы редактирования профиля
+const nameInput = editProfileForm?.querySelector('.popup__input_type_name');
+const descriptionInput = editProfileForm?.querySelector('.popup__input_type_description');
+
+// Элементы формы добавления новой карточки
+const cardNameInput = newCardForm?.querySelector('.popup__input_type_card-name');
+const cardLinkInput = newCardForm?.querySelector('.popup__input_type_url');
+
+// Элементы модального окна просмотра изображения
+const popupImageElement = imagePopup?.querySelector('.popup__image');
+const popupCaptionElement = imagePopup?.querySelector('.popup__caption');
+
+// Список карточек
 const placesList = document.querySelector('.places__list');
 
+// Рендер начальных карточек
 function renderInitialCards() {
   if (initialCards) {
     initialCards.forEach((cardData) => {
@@ -33,7 +49,7 @@ function renderInitialCards() {
 
 // Обработчик события для кнопки редактирования профиля
 editProfileButton.addEventListener('click', () => {
-  openEditProfilePopup(profileTitleElement, profileDescriptionElement);
+  openEditProfilePopup();
 });
 
 // Обработчик события для кнопки добавления нового места
@@ -47,16 +63,12 @@ setupOverlayListeners();
 renderInitialCards();
 
 // Обработчик формы редактирования профиля
-const editProfileForm = document.querySelector('.popup__form[name="edit-profile"]');
 if (editProfileForm) {
   editProfileForm.addEventListener('submit', handleEditProfileSubmit);
 }
 
 function handleEditProfileSubmit(evt) {
   evt.preventDefault();
-
-  const nameInput = editProfileForm.querySelector('.popup__input_type_name');
-  const descriptionInput = editProfileForm.querySelector('.popup__input_type_description');
 
   const newName = nameInput.value.trim();
   const newDescription = descriptionInput.value.trim();
@@ -68,7 +80,6 @@ function handleEditProfileSubmit(evt) {
 }
 
 // Обработчик формы добавления карточки
-const newCardForm = document.querySelector('.popup__form[name="new-place"]');
 if (newCardForm) {
   newCardForm.addEventListener('submit', handleNewCardSubmit);
 }
@@ -76,11 +87,8 @@ if (newCardForm) {
 function handleNewCardSubmit(evt) {
   evt.preventDefault();
 
-  const nameInput = newCardForm.querySelector('.popup__input_type_card-name');
-  const linkInput = newCardForm.querySelector('.popup__input_type_url');
-
-  const newName = nameInput.value.trim();
-  const newLink = linkInput.value.trim();
+  const newName = cardNameInput.value.trim();
+  const newLink = cardLinkInput.value.trim();
 
   const newCardData = {
     name: newName,
@@ -90,21 +98,25 @@ function handleNewCardSubmit(evt) {
   const newCard = createCard(newCardData, { deleteCard, handleLikeClick, handleImageClick });
   placesList.prepend(newCard);
 
-  nameInput.value = '';
-  linkInput.value = '';
+  cardNameInput.value = '';
+  cardLinkInput.value = '';
 
   closePopup(newCardPopup);
 }
 
 // Функция для обработки клика на изображении карточки
 function handleImageClick(imageLink, imageName) {
-  const imagePopup = document.querySelector('.popup_type_image');
-  const popupImage = imagePopup.querySelector('.popup__image');
-  const popupCaption = imagePopup.querySelector('.popup__caption');
-
-  popupImage.src = imageLink;
-  popupImage.alt = imageName;
-  popupCaption.textContent = imageName;
+  popupImageElement.src = imageLink;
+  popupImageElement.alt = imageName;
+  popupCaptionElement.textContent = imageName;
 
   openPopup(imagePopup);
+}
+
+// Функция для открытия попапа редактирования профиля
+export function openEditProfilePopup() {
+  nameInput.value = profileTitleElement.textContent;
+  descriptionInput.value = profileDescriptionElement.textContent;
+
+  openPopup(editProfilePopup);
 }

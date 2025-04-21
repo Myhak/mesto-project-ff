@@ -3,7 +3,6 @@
 export function openPopup(popup) {  
   popup.classList.add('popup_is-opened');
   document.addEventListener('keydown', closePopupByEsc);
-  popup.classList.add('popup_is-animated');
 }
 
 // Функция для закрытия окна
@@ -48,16 +47,4 @@ export function setupOverlayListeners() {
   document.addEventListener('click', (event) => {
     closePopupByOverlay(event);
   });
-}
-
-// Функция для открытия попапа редактирования профиля
-export function openEditProfilePopup(profileTitleElement, profileDescriptionElement) {
-  const editProfilePopup = document.querySelector('.popup_type_edit');
-  const nameInput = editProfilePopup.querySelector('.popup__input_type_name');
-  const descriptionInput = editProfilePopup.querySelector('.popup__input_type_description');
-
-  nameInput.value = profileTitleElement.textContent;
-  descriptionInput.value = profileDescriptionElement.textContent;
-
-  openPopup(editProfilePopup);
 }
