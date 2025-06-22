@@ -1,7 +1,16 @@
 
 // Функция для открытия окна
-export function openPopup(popup) {  
+export function openPopup(popup) {
   popup.classList.add('popup_is-opened');
+
+  const form = popup.querySelector('.popup__form');
+  if (form) {
+    const saveButton = form.querySelector('.popup__button');
+    if (saveButton) {
+      saveButton.disabled = true; 
+    }
+  }
+
   document.addEventListener('keydown', closePopupByEsc);
 }
 

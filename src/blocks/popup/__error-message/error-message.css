@@ -1,0 +1,10 @@
+.error-message {
+  display: none;
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.popup__error_visible {
+  display: block;
+}

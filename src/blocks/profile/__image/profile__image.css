@@ -20,3 +20,39 @@
     margin-right: 0;
   }
 }
+
+.profile__avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile__avatar-container:hover .profile__image {
+  filter: brightness(50%);
+}
+
+.profile__edit-avatar-button {
+  position: absolute;
+  inset-block-start: 40%;
+  inset-inline-start: 30%;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.profile__avatar-container:hover .profile__edit-avatar-button {
+  opacity: 1;
+}
+
+.profile__edit-avatar-button::before {
+  content: '';
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  background-image: url('../../../images/edit-icon.svg');
+  background-size: cover;
+}
