@@ -36,10 +36,9 @@ export function createCard(cardData, { handleLikeClick, deleteCard, handleImageC
   // Обработчики событий
 
   // Клик по кнопке лайка
-likeButton.addEventListener('click', () => {
-  const isCurrentlyLiked = likeButton.classList.contains('card__like-button_is-active');
-  handleLikeClick(cardElement, cardData._id, isCurrentlyLiked);
-});
+  likeButton.addEventListener('click', () => {
+    handleLikeClick(cardElement, cardData._id, cardData, userId);
+  });
 
   // Клик по кнопке удаления
   deleteButton.addEventListener('click', () => {
@@ -54,22 +53,19 @@ likeButton.addEventListener('click', () => {
   return cardElement;
 }
 
-// Экспортируем handleLikeClick
-export function handleLikeClick(cardElement, cardId, isLiked, cardData, userId) {
+// Экспортируем функцию, которая вызывается при клике на кнопку лайка
+export function handleLikeClick(cardElement, cardId, cardData, userId) {
   const likeButton = cardElement.querySelector('.card__like-button');
   const likeCount = cardElement.querySelector('.card__like-count');
 
-  if (isLiked) {
+  const isCurrentlyLiked = likeButton.classList.contains('card__like-button_is-active');
+
+  if (isCurrentlyLiked) {
     removeLike(cardId)
       .then((updatedCard) => {
-        // Убираем активный стиль
-        likeButton.classList.remove('card__like-button_is-active');
-
-        // Обновляем количество лайков
         likeCount.textContent = updatedCard.likes.length;
-
-        // Обновляем данные карточки
-        cardData.likes = updatedCard.likes;
+        likeButton.classList.remove('card__like-button_is-active');
+        cardData.likes = updatedCard.likes; // Обновляем массив likes
       })
       .catch((err) => {
         console.error('Ошибка при удалении лайка:', err);
@@ -77,14 +73,9 @@ export function handleLikeClick(cardElement, cardId, isLiked, cardData, userId) 
   } else {
     addLike(cardId)
       .then((updatedCard) => {
-        // Добавляем активный стиль
-        likeButton.classList.add('card__like-button_is-active');
-
-        // Обновляем количество лайков
         likeCount.textContent = updatedCard.likes.length;
-
-        // Обновляем данные карточки
-        cardData.likes = updatedCard.likes;
+        likeButton.classList.add('card__like-button_is-active');
+        cardData.likes = updatedCard.likes; // Обновляем массив likes
       })
       .catch((err) => {
         console.error('Ошибка при добавлении лайка:', err);
