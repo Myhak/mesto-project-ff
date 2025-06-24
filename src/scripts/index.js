@@ -35,7 +35,6 @@ const validationConfig = {
   errorClass: 'popup__error_visible'
 };
 
-// Включаем валидацию
 enableValidation(validationConfig);
 
 // === Элементы профиля ===
@@ -107,7 +106,13 @@ Promise.all([getUserInfo(), getInitialCards()])
       const card = createCard(
         cardData,
         {
-          handleLikeClick,
+          handleLikeClick: (cardElement, cardId) => {
+            const isLiked = cardElement
+              .querySelector('.card__like-button')
+              .classList.contains('card__like-button_is-active');
+
+            handleLikeClick(cardElement, cardId, isLiked, cardData, currentUser._id);
+          },
           deleteCard: (cardId) => {
             apiDeleteCard(cardId)
               .then(() => {
@@ -119,7 +124,7 @@ Promise.all([getUserInfo(), getInitialCards()])
           },
           handleImageClick
         },
-        userData._id
+        currentUser._id
       );
       placesList.append(card);
     });
@@ -211,7 +216,13 @@ function handleNewCardSubmit(evt) {
       const newCard = createCard(
         newCardData,
         {
-          handleLikeClick,
+          handleLikeClick: (cardElement, cardId) => {
+            const isLiked = cardElement
+              .querySelector('.card__like-button')
+              .classList.contains('card__like-button_is-active');
+
+            handleLikeClick(cardElement, cardId, isLiked, newCardData, currentUser._id);
+          },
           deleteCard: (cardId) => {
             apiDeleteCard(cardId)
               .then(() => {
