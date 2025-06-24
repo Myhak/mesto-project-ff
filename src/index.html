@@ -40,15 +40,17 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Редактировать профиль</h3>
-      <form class="popup__form" name="edit-profile">
+      <form class="popup__form" name="edit-profile" novalidate>
         <input type="text" name="name" class="popup__input popup__input_type_name" id="name"
           placeholder="Имя" required
           minlength="2" maxlength="40"
+          pattern="^[a-zA-Z\u0400-\u04FF \-]+$"
           data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
         <span class="error-message" id="name-error"></span>
         <input type="text" name="description" class="popup__input popup__input_type_description" id="description"
           placeholder="Занятие" required
           minlength="2" maxlength="200"
+          pattern="^[a-zA-Z\u0400-\u04FF \-]+$"
           data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
         <span class="error-message" id="description-error"></span>
         <button type="submit" class="button popup__button">Сохранить</button>
@@ -60,14 +62,16 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Новое место</h3>
-      <form class="popup__form" name="new-place">
+      <form class="popup__form" name="new-place" novalidate>
         <input type="text" name="place-name" class="popup__input popup__input_type_card-name" id="place-name"
           placeholder="Название" required
           minlength="2" maxlength="30"
+          pattern="^[a-zA-Z\u0400-\u04FF \-]+$"
           data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
         <span class="error-message" id="place-name-error"></span>
         <input type="url" name="link" class="popup__input popup__input_type_url" id="link"
           placeholder="Ссылка на картинку" required
+          pattern="^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$"
           data-error-message="Введите корректный URL">
         <span class="error-message" id="link-error"></span>
         <button type="submit" class="button popup__button">Сохранить</button>
@@ -79,10 +83,10 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Обновить аватар</h3>
-      <form class="popup__form" name="avatar-form">
+      <form class="popup__form" name="avatar-form" novalidate>
         <input type="url" name="avatar-url" class="popup__input popup__input_type_avatar-url" id="avatar-url"
           placeholder="Ссылка на изображение" required
-          pattern="https?://.+"
+          pattern="^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$"
           data-error-message="Введите корректный URL">
         <span class="error-message" id="avatar-url-error"></span>
         <button type="submit" class="button popup__button">Сохранить</button>

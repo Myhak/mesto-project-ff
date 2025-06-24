@@ -1,15 +1,7 @@
 import { addLike, removeLike } from './api.js';
 
-// Глобальные переменные
-let currentUser = null;
-
-//Установка текущего пользователя
-export function setCurrentUser(user) {
-  currentUser = user;
-}
-
 // Функция для создания карточки
-export function createCard(cardData, { deleteCard, handleImageClick }) {
+export function createCard(cardData, { handleLikeClick, deleteCard, handleImageClick }, userId) {
   const cardTemplate = document.querySelector('#card-template');
   const cardElement = cardTemplate.content.cloneNode(true).querySelector('.places__item');
 
@@ -27,28 +19,31 @@ export function createCard(cardData, { deleteCard, handleImageClick }) {
   // Отображение количества лайков
   likeCount.textContent = cardData.likes.length;
 
-  // Проверяем, лайкнул ли пользователь эту карточку
-  const isLiked = cardData.likes.some(like => like._id === currentUser._id);
+  // Проверяем, лайкнул ли текущий пользователь эту карточку
+  const isLiked = cardData.likes.some(like => like._id === userId);
+
   if (isLiked) {
     likeButton.classList.add('card__like-button_is-active');
   }
 
   // Проверяем, является ли текущий пользователь владельцем карточки
-  const isOwnedByCurrentUser = cardData.owner._id === currentUser._id;
+  const isOwnedByCurrentUser = cardData.owner._id === userId;
+
   if (!isOwnedByCurrentUser) {
     deleteButton.style.display = 'none';
   }
 
   // Обработчики событий
 
+  // Клик по кнопке лайка
+likeButton.addEventListener('click', () => {
+  const isCurrentlyLiked = likeButton.classList.contains('card__like-button_is-active');
+  handleLikeClick(cardElement, cardData._id, isCurrentlyLiked);
+});
+
   // Клик по кнопке удаления
   deleteButton.addEventListener('click', () => {
-    deleteCard(cardElement, cardData._id);
-  });
-
-  // Клик по кнопке лайка
-  likeButton.addEventListener('click', () => {
-    handleLikeClick(cardElement, cardData._id, isLiked);
+    deleteCard(cardData._id);
   });
 
   // Клик по изображению карточки
@@ -59,7 +54,7 @@ export function createCard(cardData, { deleteCard, handleImageClick }) {
   return cardElement;
 }
 
-// Функция для обработки клика на кнопку лайка
+// Экспортируем handleLikeClick
 export function handleLikeClick(cardElement, cardId, isLiked) {
   const likeButton = cardElement.querySelector('.card__like-button');
   const likeCount = cardElement.querySelector('.card__like-count');
@@ -68,8 +63,8 @@ export function handleLikeClick(cardElement, cardId, isLiked) {
     // Убираем лайк
     removeLike(cardId)
       .then((updatedCard) => {
-        likeCount.textContent = updatedCard.likes.length;
-        likeButton.classList.remove('card__like-button_is-active');
+        likeCount.textContent = updatedCard.likes.length; // Обновляем количество лайков
+        likeButton.classList.remove('card__like-button_is-active'); // Снимаем активный стиль
       })
       .catch((err) => {
         console.error('Ошибка при удалении лайка:', err);
@@ -78,34 +73,11 @@ export function handleLikeClick(cardElement, cardId, isLiked) {
     // Ставим лайк
     addLike(cardId)
       .then((updatedCard) => {
-        likeCount.textContent = updatedCard.likes.length;
-        likeButton.classList.add('card__like-button_is-active');
+        likeCount.textContent = updatedCard.likes.length; // Обновляем количество лайков
+        likeButton.classList.add('card__like-button_is-active'); // Добавляем активный стиль
       })
       .catch((err) => {
         console.error('Ошибка при добавлении лайка:', err);
       });
   }
-}
-
-// Функция для удаления карточки
-export function deleteCard(cardElement, cardId) {
-  fetch(`https://nomoreparties.co/v1/wff-cohort-41/cards/${cardId}`,  {
-    method: 'DELETE',
-    headers: {
-      authorization: '5c54faa6-cab3-4ff0-8168-4c278232587a',
-      'Content-Type': 'application/json'
-    }
-  })
-    .then(res => {
-      if (!res.ok) {
-        return Promise.reject(`Ошибка: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then(() => {
-      cardElement.remove();
-    })
-    .catch((err) => {
-      console.error('Ошибка при удалении карточки:', err);
-    });
 }

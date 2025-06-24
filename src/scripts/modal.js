@@ -1,13 +1,15 @@
-
 // Функция для открытия окна
-export function openPopup(popup) {
+export function openPopup(popup, disableSaveButton = false) {
   popup.classList.add('popup_is-opened');
 
-  const form = popup.querySelector('.popup__form');
-  if (form) {
-    const saveButton = form.querySelector('.popup__button');
-    if (saveButton) {
-      saveButton.disabled = true; 
+  if (disableSaveButton) {
+    const form = popup.querySelector('.popup__form');
+    if (form) {
+      const saveButton = form.querySelector('.popup__button');
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.classList.add('popup__button_disabled'); // Добавляем класс неактивной кнопки
+      }
     }
   }
 
@@ -38,7 +40,7 @@ function closePopupByEsc(event) {
   }
 }
 
-// закрытие
+// Закрытие по кнопкам
 export function setupCloseButtons() {
   const closeButtons = document.querySelectorAll('.popup__close');
   closeButtons.forEach((closeButton) => {
@@ -51,7 +53,7 @@ export function setupCloseButtons() {
   });
 }
 
-// оверлей
+// Обработчик кликов на оверлей
 export function setupOverlayListeners() {
   document.addEventListener('click', (event) => {
     closePopupByOverlay(event);

@@ -1,35 +1,31 @@
 import '../pages/index.css';
 
-// Импорты из других модулей
+// === Импорты из других модулей ===
 import {
   getUserInfo,
   getInitialCards,
   editProfile as apiEditProfile,
   addCard as apiAddCard,
-  apiUpdateAvatar
+  updateAvatar as apiUpdateAvatar,
+  deleteCard as apiDeleteCard
 } from './api.js';
-
 import {
   createCard,
-  deleteCard,
-  handleLikeClick,
-  setCurrentUser
+  handleLikeClick
 } from './card.js';
-
 import {
   openPopup,
   closePopup,
   setupCloseButtons,
   setupOverlayListeners
 } from './modal.js';
-
 import {
   enableValidation,
   clearValidation,
   toggleButtonState
 } from './validation.js';
 
-// Конфигурация валидации
+// === Конфигурация валидации ===
 const validationConfig = {
   formSelector: '.popup__form',
   inputSelector: '.popup__input',
@@ -39,64 +35,65 @@ const validationConfig = {
   errorClass: 'popup__error_visible'
 };
 
+// Включаем валидацию
 enableValidation(validationConfig);
 
-// Элементы профиля
+// === Элементы профиля ===
 const profileTitleElement = document.querySelector('.profile__title');
 const profileDescriptionElement = document.querySelector('.profile__description');
 const profileAvatarElement = document.querySelector('.profile__image');
 
-// Кнопка редактирования аватара
-const editAvatarButton = document.querySelector('.profile__edit-avatar-button');
+// Контейнер аватара и попап
+const profileAvatarContainer = document.querySelector('.profile__avatar-container');
 const avatarPopup = document.querySelector('.popup_type_avatar-popup');
 
-// Кнопки управления
+// === Кнопки управления ===
 const editProfileButton = document.querySelector('.profile__edit-button');
 const addCardButton = document.querySelector('.profile__add-button');
 
-// Модальные окна
+// === Модальные окна ===
 const editProfilePopup = document.querySelector('.popup_type_edit');
 const newCardPopup = document.querySelector('.popup_type_new-card');
 const imagePopup = document.querySelector('.popup_type_image');
 
-// Формы модальных окон
+// === Формы модальных окон ===
 const editProfileForm = editProfilePopup?.querySelector('.popup__form[name="edit-profile"]');
 const newCardForm = newCardPopup?.querySelector('.popup__form[name="new-place"]');
 const avatarForm = avatarPopup?.querySelector('.popup__form[name="avatar-form"]');
 
-// Элементы формы редактирования профиля
+// === Элементы формы редактирования профиля ===
 const nameInput = editProfileForm?.querySelector('.popup__input_type_name');
 const descriptionInput = editProfileForm?.querySelector('.popup__input_type_description');
 
-// Элементы формы добавления новой карточки
+// === Элементы формы добавления новой карточки ===
 const cardNameInput = newCardForm?.querySelector('.popup__input_type_card-name');
 const cardLinkInput = newCardForm?.querySelector('.popup__input_type_url');
 
-// Элементы формы обновления аватара
+// === Элементы формы обновления аватара ===
 const avatarInput = avatarForm?.querySelector('.popup__input_type_avatar-url');
 
-// Элементы попапа просмотра изображения
+// === Элементы попапа просмотра изображения ===
 const popupImageElement = imagePopup?.querySelector('.popup__image');
 const popupCaptionElement = imagePopup?.querySelector('.popup__caption');
 
-// Список карточек
+// === Список карточек ===
 const placesList = document.querySelector('.places__list');
 
-// Установка слушателей событий для закрытия попапов
+// === Текущий пользователь (глобальная переменная) ===
+let currentUser = null;
+
+export function setCurrentUser(user) {
+  currentUser = user;
+}
+
+// === Установка слушателей событий для закрытия попапов ===
 setupCloseButtons();
 setupOverlayListeners();
 
-// Загрузка данных с сервера и отрисовка интерфейса
+// === Загрузка данных с сервера и отрисовка интерфейса ===
 Promise.all([getUserInfo(), getInitialCards()])
   .then(([userData, cards]) => {
-    // Устанавливаем текущего пользователя
-    if (typeof setCurrentUser === 'function') {
-      setCurrentUser(userData);
-    } else {
-      console.error('setCurrentUser не определена или не импортирована');
-    }
-
-    // Обновляем данные профиля
+    setCurrentUser(userData);
     if (profileTitleElement && profileDescriptionElement && profileAvatarElement) {
       profileTitleElement.textContent = userData.name;
       profileDescriptionElement.textContent = userData.about;
@@ -105,22 +102,33 @@ Promise.all([getUserInfo(), getInitialCards()])
       console.error('Не найдены элементы профиля в DOM');
     }
 
-    // Очищаем список и добавляем новые карточки
-    if (placesList) {
-      placesList.innerHTML = '';
-      cards.forEach((cardData) => {
-        const card = createCard(cardData, { deleteCard, handleLikeClick, handleImageClick });
-        placesList.append(card);
-      });
-    } else {
-      console.error('Элемент .places__list не найден в DOM');
-    }
+    placesList.innerHTML = '';
+    cards.forEach((cardData) => {
+      const card = createCard(
+        cardData,
+        {
+          handleLikeClick,
+          deleteCard: (cardId) => {
+            apiDeleteCard(cardId)
+              .then(() => {
+                card.remove(); // Удаляем карточку из DOM
+              })
+              .catch((err) => {
+                console.error('Ошибка при удалении карточки:', err);
+              });
+          },
+          handleImageClick
+        },
+        userData._id
+      );
+      placesList.append(card);
+    });
   })
   .catch((err) => {
     console.error('Ошибка при загрузке данных с сервера:', err);
   });
 
-// Слушатели событий кнопок
+// === Слушатели событий кнопок ===
 if (editProfileButton) {
   editProfileButton.addEventListener('click', () => {
     openEditProfilePopup();
@@ -130,16 +138,17 @@ if (editProfileButton) {
 if (addCardButton) {
   addCardButton.addEventListener('click', () => {
     openPopup(newCardPopup);
+    clearValidation(newCardForm, validationConfig);
   });
 }
 
-if (editAvatarButton && avatarPopup) {
-  editAvatarButton.addEventListener('click', () => {
+if (profileAvatarContainer && avatarPopup) {
+  profileAvatarContainer.addEventListener('click', () => {
     openPopup(avatarPopup);
-    updateAvatarFormValidation();
+    clearValidation(avatarForm, validationConfig);
   });
 } else {
-  console.error('Кнопка редактирования аватара или попап не найдены');
+  console.error('profile__avatar-container или popup_type_avatar-popup не найдены');
 }
 
 // === Обработчики форм ===
@@ -155,20 +164,13 @@ if (avatarForm) {
   avatarForm.addEventListener('submit', handleAvatarUpdateSubmit);
 }
 
-// Функции обработки форм
+// === Функции обработки форм ===
 
-// Редактирование профиля
+// === Редактирование профиля ===
 function handleEditProfileSubmit(evt) {
   evt.preventDefault();
-
   const saveButton = editProfileForm.querySelector('.popup__button');
   const originalButtonText = saveButton.textContent;
-
-  if (!editProfileForm.checkValidity()) {
-    console.error('Форма редактирования профиля не прошла валидацию');
-    return;
-  }
-
   saveButton.textContent = 'Сохранение...';
   saveButton.disabled = true;
   saveButton.classList.add('loading');
@@ -192,18 +194,11 @@ function handleEditProfileSubmit(evt) {
     });
 }
 
-// Добавление новой карточки
+// === Добавление новой карточки ===
 function handleNewCardSubmit(evt) {
   evt.preventDefault();
-
   const saveButton = newCardForm.querySelector('.popup__button');
   const originalButtonText = saveButton.textContent;
-
-  if (!newCardForm.checkValidity()) {
-    console.error('Форма добавления карточки не прошла валидацию');
-    return;
-  }
-
   saveButton.textContent = 'Сохранение...';
   saveButton.disabled = true;
   saveButton.classList.add('loading');
@@ -213,9 +208,24 @@ function handleNewCardSubmit(evt) {
 
   apiAddCard(newName, newLink)
     .then((newCardData) => {
-      const newCard = createCard(newCardData, { deleteCard, handleLikeClick, handleImageClick });
+      const newCard = createCard(
+        newCardData,
+        {
+          handleLikeClick,
+          deleteCard: (cardId) => {
+            apiDeleteCard(cardId)
+              .then(() => {
+                newCard.remove();
+              })
+              .catch((err) => {
+                console.error('Ошибка при удалении карточки:', err);
+              });
+          },
+          handleImageClick
+        },
+        currentUser._id
+      );
       placesList.prepend(newCard);
-
       newCardForm.reset();
       clearValidation(newCardForm, validationConfig);
       closePopup(newCardPopup);
@@ -230,18 +240,11 @@ function handleNewCardSubmit(evt) {
     });
 }
 
-// Обновление аватара
+// === Обновление аватара ===
 function handleAvatarUpdateSubmit(evt) {
   evt.preventDefault();
-
   const saveButton = avatarForm.querySelector('.popup__button');
   const originalButtonText = saveButton.textContent;
-
-  if (!avatarForm.checkValidity()) {
-    console.error('Форма обновления аватара не прошла валидацию');
-    return;
-  }
-
   saveButton.textContent = 'Сохранение...';
   saveButton.disabled = true;
   saveButton.classList.add('loading');
@@ -263,19 +266,18 @@ function handleAvatarUpdateSubmit(evt) {
     });
 }
 
-// Открытие попапа редактирования профиля
+// === Открытие попапа редактирования профиля ===
 export function openEditProfilePopup() {
   if (!nameInput || !descriptionInput) {
     console.error('openEditProfilePopup: поля ввода не найдены');
     return;
   }
-
   nameInput.value = profileTitleElement.textContent;
   descriptionInput.value = profileDescriptionElement.textContent;
 
   if (editProfileForm && validationConfig) {
     clearValidation(editProfileForm, validationConfig);
-    updateEditProfileFormValidation();
+    updateEditProfileFormValidation(); // Активируем кнопку, если поля валидны
   } else {
     console.error('openEditProfilePopup: форма или конфигурация не найдены');
   }
@@ -283,31 +285,31 @@ export function openEditProfilePopup() {
   openPopup(editProfilePopup);
 }
 
+// === Обновление состояния кнопок в формах ===
 function updateEditProfileFormValidation() {
-  const inputList = editProfileForm.querySelectorAll(validationConfig.inputSelector);
+  const inputList = Array.from(editProfileForm.querySelectorAll(validationConfig.inputSelector));
   const buttonElement = editProfileForm.querySelector(validationConfig.submitButtonSelector);
   toggleButtonState(inputList, buttonElement, validationConfig);
 }
 
 function updateNewCardFormValidation() {
-  const inputList = newCardForm.querySelectorAll(validationConfig.inputSelector);
+  const inputList = Array.from(newCardForm.querySelectorAll(validationConfig.inputSelector));
   const buttonElement = newCardForm.querySelector(validationConfig.submitButtonSelector);
   toggleButtonState(inputList, buttonElement, validationConfig);
 }
 
 function updateAvatarFormValidation() {
-  const inputList = avatarForm.querySelectorAll(validationConfig.inputSelector);
+  const inputList = Array.from(avatarForm.querySelectorAll(validationConfig.inputSelector));
   const buttonElement = avatarForm.querySelector(validationConfig.submitButtonSelector);
   toggleButtonState(inputList, buttonElement, validationConfig);
 }
 
-// Обработчик клика по изображению для открытия попапа
+// === Обработчик клика по изображению для открытия попапа ===
 function handleImageClick(imageLink, imageName) {
   if (popupImageElement && popupCaptionElement) {
     popupImageElement.src = imageLink;
     popupImageElement.alt = imageName;
     popupCaptionElement.textContent = imageName;
-
     openPopup(imagePopup);
   } else {
     console.error('handleImageClick: элементы попапа не найдены');

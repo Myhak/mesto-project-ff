@@ -1,18 +1,14 @@
-
-const validCharsRegex = /^[a-zA-Zа-яА-ЯёЁ -]+$/;
-const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/i;
-
 export function enableValidation(config) {
   const formList = document.querySelectorAll(config.formSelector);
 
   formList.forEach((formElement) => {
-    const inputList = formElement.querySelectorAll(config.inputSelector);
+    const inputList = Array.from(formElement.querySelectorAll(config.inputSelector)); // Преобразуем NodeList в массив
     const buttonElement = formElement.querySelector(config.submitButtonSelector);
 
     // Устанавливаем начальное состояние кнопки
     toggleButtonState(inputList, buttonElement, config);
 
-    // Добавляем слушатели событий на все поля ввода
+    // Добавляем слушатели событий на поля ввода
     inputList.forEach((inputElement) => {
       inputElement.addEventListener('input', () => {
         isValid(formElement, inputElement, config);
@@ -23,27 +19,13 @@ export function enableValidation(config) {
 }
 
 function isValid(formElement, inputElement, config) {
-  const isInputValid = inputElement.validity.valid;
-
-  if (!isInputValid) {
+  if (inputElement.validity.patternMismatch && inputElement.dataset.errorMessage) {
+    showInputError(inputElement, inputElement.dataset.errorMessage, config);
+  } else if (!inputElement.validity.valid) {
     showInputError(inputElement, inputElement.validationMessage, config);
-  } else if (inputElement.name === 'name' || inputElement.name === 'place-name') {
-    if (!validCharsRegex.test(inputElement.value)) {
-      showInputError(inputElement, inputElement.dataset.errorMessage, config);
-    } else {
-      hideInputError(inputElement, config);
-    }
-  } else if (inputElement.name === 'link' || inputElement.name === 'avatar-url') {
-    if (!urlRegex.test(inputElement.value)) {
-      showInputError(inputElement, inputElement.dataset.errorMessage, config);
-    } else {
-      hideInputError(inputElement, config);
-    }
   } else {
     hideInputError(inputElement, config);
   }
-
-  return isInputValid;
 }
 
 function showInputError(inputElement, errorMessage, config) {
@@ -67,9 +49,7 @@ function hideInputError(inputElement, config) {
 }
 
 export function toggleButtonState(inputList, buttonElement, config) {
-  const hasInvalidInput = Array.from(inputList).some(
-    (inputElement) => !inputElement.validity.valid
-  );
+  const hasInvalidInput = inputList.some((inputElement) => !inputElement.validity.valid); // Теперь inputList — это массив
 
   if (hasInvalidInput) {
     buttonElement.disabled = true;
@@ -86,21 +66,16 @@ export function clearValidation(formElement, config) {
     return;
   }
 
-  const inputList = formElement.querySelectorAll(config.inputSelector);
+  const inputList = Array.from(formElement.querySelectorAll(config.inputSelector));
   const buttonElement = formElement.querySelector(config.submitButtonSelector);
 
-  if (!inputList || !buttonElement) {
+  if (!inputList.length || !buttonElement) {
     console.error('clearValidation: поля ввода или кнопка не найдены');
     return;
   }
 
   inputList.forEach((inputElement) => {
-    const errorElement = document.getElementById(`${inputElement.id}-error`);
-    if (errorElement) {
-      inputElement.classList.remove(config.inputErrorClass);
-      errorElement.textContent = '';
-      errorElement.classList.remove(config.errorClass);
-    }
+    hideInputError(inputElement, config);
   });
 
   toggleButtonState(inputList, buttonElement, config);
