@@ -1,28 +1,16 @@
-// Функция для открытия окна
-export function openPopup(popup, disableSaveButton = false) {
+// === Функция для открытия окна ===
+export function openPopup(popup) {
   popup.classList.add('popup_is-opened');
-
-  if (disableSaveButton) {
-    const form = popup.querySelector('.popup__form');
-    if (form) {
-      const saveButton = form.querySelector('.popup__button');
-      if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.classList.add('popup__button_disabled'); // Добавляем класс неактивной кнопки
-      }
-    }
-  }
-
   document.addEventListener('keydown', closePopupByEsc);
 }
 
-// Функция для закрытия окна
+// === Функция для закрытия окна ===
 export function closePopup(popup) {
   popup.classList.remove('popup_is-opened');
   document.removeEventListener('keydown', closePopupByEsc);
 }
 
-// Функция для закрытия окна по клику на оверлей
+// === Закрытие по оверлею ===
 function closePopupByOverlay(event) {
   const popup = event.target.closest('.popup');
   if (popup && event.target === popup) {
@@ -30,7 +18,7 @@ function closePopupByOverlay(event) {
   }
 }
 
-// Функция для закрытия окна по нажатию Esc
+// === Закрытие по нажатию Esc ===
 function closePopupByEsc(event) {
   if (event.key === 'Escape') {
     const popup = document.querySelector('.popup_is-opened');
@@ -40,7 +28,7 @@ function closePopupByEsc(event) {
   }
 }
 
-// Закрытие по кнопкам
+// === Обработчики кликов на кнопки закрытия ===
 export function setupCloseButtons() {
   const closeButtons = document.querySelectorAll('.popup__close');
   closeButtons.forEach((closeButton) => {
@@ -53,7 +41,7 @@ export function setupCloseButtons() {
   });
 }
 
-// Обработчик кликов на оверлей
+// === Обработчики кликов по оверлею ===
 export function setupOverlayListeners() {
   document.addEventListener('click', (event) => {
     closePopupByOverlay(event);

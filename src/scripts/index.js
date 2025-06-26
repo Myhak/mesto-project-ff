@@ -106,25 +106,13 @@ Promise.all([getUserInfo(), getInitialCards()])
       const card = createCard(
         cardData,
         {
-          handleLikeClick: (cardElement, cardId) => {
-            const isLiked = cardElement
-              .querySelector('.card__like-button')
-              .classList.contains('card__like-button_is-active');
-
-            handleLikeClick(cardElement, cardId, isLiked, cardData, currentUser._id);
-          },
+          handleLikeClick,
           deleteCard: (cardId) => {
-            apiDeleteCard(cardId)
-              .then(() => {
-                card.remove(); // Удаляем карточку из DOM
-              })
-              .catch((err) => {
-                console.error('Ошибка при удалении карточки:', err);
-              });
+            return apiDeleteCard(cardId); // просто вызываем API, удаление из DOM происходит в card.js
           },
           handleImageClick
         },
-        currentUser._id
+        userData._id
       );
       placesList.append(card);
     });
@@ -144,6 +132,7 @@ if (addCardButton) {
   addCardButton.addEventListener('click', () => {
     openPopup(newCardPopup);
     clearValidation(newCardForm, validationConfig);
+    updateNewCardFormValidation();
   });
 }
 
@@ -151,6 +140,7 @@ if (profileAvatarContainer && avatarPopup) {
   profileAvatarContainer.addEventListener('click', () => {
     openPopup(avatarPopup);
     clearValidation(avatarForm, validationConfig);
+    updateAvatarFormValidation();
   });
 } else {
   console.error('profile__avatar-container или popup_type_avatar-popup не найдены');
@@ -168,8 +158,6 @@ if (newCardForm) {
 if (avatarForm) {
   avatarForm.addEventListener('submit', handleAvatarUpdateSubmit);
 }
-
-// === Функции обработки форм ===
 
 // === Редактирование профиля ===
 function handleEditProfileSubmit(evt) {
@@ -199,7 +187,6 @@ function handleEditProfileSubmit(evt) {
     });
 }
 
-// === Добавление новой карточки ===
 function handleNewCardSubmit(evt) {
   evt.preventDefault();
   const saveButton = newCardForm.querySelector('.popup__button');
@@ -216,26 +203,15 @@ function handleNewCardSubmit(evt) {
       const newCard = createCard(
         newCardData,
         {
-          handleLikeClick: (cardElement, cardId) => {
-            const isLiked = cardElement
-              .querySelector('.card__like-button')
-              .classList.contains('card__like-button_is-active');
-
-            handleLikeClick(cardElement, cardId, isLiked, newCardData, currentUser._id);
-          },
+          handleLikeClick,
           deleteCard: (cardId) => {
-            apiDeleteCard(cardId)
-              .then(() => {
-                newCard.remove();
-              })
-              .catch((err) => {
-                console.error('Ошибка при удалении карточки:', err);
-              });
+            return apiDeleteCard(cardId); // передаём дальше
           },
           handleImageClick
         },
         currentUser._id
       );
+
       placesList.prepend(newCard);
       newCardForm.reset();
       clearValidation(newCardForm, validationConfig);
@@ -288,7 +264,7 @@ export function openEditProfilePopup() {
 
   if (editProfileForm && validationConfig) {
     clearValidation(editProfileForm, validationConfig);
-    updateEditProfileFormValidation(); // Активируем кнопку, если поля валидны
+    updateEditProfileFormValidation();
   } else {
     console.error('openEditProfilePopup: форма или конфигурация не найдены');
   }
