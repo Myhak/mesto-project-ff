@@ -14,6 +14,9 @@ export function createCard(cardData, { handleLikeClick, deleteCard, handleImageC
   const likeButton = cardElement.querySelector('.card__like-button');
   const likeCount = cardElement.querySelector('.card__like-count');
 
+  // Добавляем data-атрибут для отладки и поиска
+  cardElement.setAttribute('data-card-id', cardData._id);
+
   // Заполняем данными
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
@@ -36,7 +39,7 @@ export function createCard(cardData, { handleLikeClick, deleteCard, handleImageC
 
   // Лайк
   likeButton.addEventListener('click', () => {
-    handleLikeClick(cardElement, cardData._id);
+    handleLikeClick(likeButton, likeCount, cardData._id);
   });
 
   // Удаление
@@ -58,9 +61,7 @@ export function createCard(cardData, { handleLikeClick, deleteCard, handleImageC
   return cardElement;
 }
 
-export function handleLikeClick(cardElement, cardId) {
-  const likeButton = cardElement.querySelector('.card__like-button');
-  const likeCount = cardElement.querySelector('.card__like-count');
+export function handleLikeClick(likeButton, likeCount, cardId) {
   const isCurrentlyLiked = likeButton.classList.contains('card__like-button_is-active');
 
   if (isCurrentlyLiked) {
